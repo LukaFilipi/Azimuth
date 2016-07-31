@@ -23,13 +23,15 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
-
+    private final String TAG = "MainActivity";
 
     private Camera mCamera;
     private CameraPreview mPreview;
     private SensorManager sManager;
+    private static boolean exposureLowered = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,6 +45,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
         preview.addView(mPreview);
 
+        setAutoFocus();
+
         sManager = (SensorManager) getSystemService(SENSOR_SERVICE);
 
         // Add a listener to the Capture button
@@ -54,11 +58,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                         // get an image from the camera
                         mCamera.takePicture(null, null, jpegCallBack);
 
+                        // zero the azimuth angle if this is the first picture taken
                         if(firstPicTaken == false) {
                             zeroAzimuth = azimuth;
                             firstPicTaken = true;
                         }
-
                     }
 
                 });
@@ -120,7 +124,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
     }
 
-    /** A safe way to get an instance of the Camera object. */
+    // A safe way to get an instance of the Camera object.
     public static Camera getCameraInstance(){
         Camera c = null;
         try {
@@ -132,7 +136,35 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         return c; // returns null if camera is unavailable
     }
 
+    private void setAutoFocus() {
+        Camera.Parameters params = mCamera.getParameters();
+        List<String> focusModes = params.getSupportedFocusModes();
+        if (focusModes.contains(Camera.Parameters.FOCUS_MODE_AUTO)) {
+            // set the focus mode
+            params.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
+            // set Camera parameters
+            mCamera.setParameters(params);
+        }
+    }
 
+    private void lowerExposure() {
+        Camera.Parameters params = mCamera.getParameters();
+        int exposureCompensation = params.getExposureCompensation();
+        int minExposure = params.getMinExposureCompensation();
+        int maxExposure = params.getMaxExposureCompensation();
+        float exposureStep = params.getExposureCompensationStep();
+
+        params.setExposureCompensation(minExposure);
+        mCamera.setParameters(params);
+        exposureLowered = true;
+    }
+
+    private void resetExposure() {
+        Camera.Parameters params = mCamera.getParameters();
+        params.setExposureCompensation(0);
+        mCamera.setParameters(params);
+        exposureLowered = false;
+    }
 
 
     File mFile = null;
@@ -146,7 +178,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                                         "PolarisationImages");
         if(!imageStorageDir.exists()) {
             if(!imageStorageDir.mkdirs()) {
-                Log.d("MainActivity", "Failed to create directory");
+                Log.d(TAG, "Failed to create directory");
                 Toast.makeText(MainActivity.this, "Failed to create directory", Toast.LENGTH_LONG).show();
                 return;
             }
@@ -165,7 +197,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
             createImageFile();
             if (mFile == null){
-                Log.d("MainActivity", "Error creating media file, check storage permissions");
+                Log.d(TAG, "Error creating media file, check storage permissions");
                 Toast.makeText(MainActivity.this, "Error creating media file", Toast.LENGTH_LONG).show();
 
                 return;
@@ -177,18 +209,27 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 outStream.flush();
                 outStream.close();
 
-                Log.d("MainActivity", "Wrote " + data.length + " bytes to " + mFile.getAbsolutePath());
+                Log.d(TAG, "Wrote " + data.length + " bytes to " + mFile.getAbsolutePath());
 
                 Toast.makeText(MainActivity.this, "Image saved to " + mFile.getAbsolutePath(), Toast.LENGTH_SHORT).show();
 
             } catch (FileNotFoundException e) {
-                Log.d("MainActivity", "File not found: " + e.getMessage());
+                Log.d(TAG, "File not found: " + e.getMessage());
                 Toast.makeText(MainActivity.this, "File not found", Toast.LENGTH_LONG).show();
             } catch (IOException e) {
-                Log.d("MainActivity", "Error accessing file: " + e.getMessage());
+                Log.d(TAG, "Error accessing file: " + e.getMessage());
                 Toast.makeText(MainActivity.this, "Error accessing file", Toast.LENGTH_LONG).show();
             }
-            camera.startPreview();
+
+            if(!exposureLowered) {
+                lowerExposure();
+                camera.startPreview();
+                camera.takePicture(null, null, jpegCallBack);
+            } else {
+                resetExposure();
+                camera.startPreview();
+            }
+
         }
 
     };
