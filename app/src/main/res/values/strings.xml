@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Azimuth</string>
+    <string name="default_angle">0</string>
+    <string name="reset_button">Reset</string>
+    <string name="viewfinder_button">View</string>
+    <string name="flat">Flat</string>
+</resources>
