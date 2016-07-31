@@ -59,7 +59,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                             firstPicTaken = true;
                         }
 
-                        mCamera.startPreview();
                     }
 
                 });
@@ -189,7 +188,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 Log.d("MainActivity", "Error accessing file: " + e.getMessage());
                 Toast.makeText(MainActivity.this, "Error accessing file", Toast.LENGTH_LONG).show();
             }
+            camera.startPreview();
         }
+
     };
 
 
