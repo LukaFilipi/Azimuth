@@ -13,6 +13,7 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.hardware.Camera;
+import android.hardware.Camera.AutoFocusCallback;
 import android.widget.Toast;
 
 import org.w3c.dom.Text;
@@ -104,20 +105,29 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     protected void onResume()
     {
         super.onResume();
-        /*register the sensor listener to listen to the gyroscope sensor, use the
-        callbacks defined in this class, and gather the sensor information as quick
-        as possible*/
+
+        if (mCamera == null) {
+            mCamera = getCameraInstance();
+            mPreview = new CameraPreview(this, mCamera);
+            FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
+            preview.addView(mPreview);
+        }
+
+        // register the sensor listener to listen to the accelerometer
         sManager.registerListener(this, sManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),SensorManager.SENSOR_DELAY_NORMAL);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
+        FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
+        preview.removeView(mPreview);
         releaseCamera();
     }
 
     private void releaseCamera(){
         if (mCamera != null){
+            mCamera.setPreviewCallback(null);
             mCamera.stopPreview();
             mCamera.release();        // release the camera for other applications
             mCamera = null;
@@ -136,17 +146,19 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         return c; // returns null if camera is unavailable
     }
 
+    // Set the focus mode to continuous picture
     private void setAutoFocus() {
         Camera.Parameters params = mCamera.getParameters();
         List<String> focusModes = params.getSupportedFocusModes();
-        if (focusModes.contains(Camera.Parameters.FOCUS_MODE_AUTO)) {
+        if (focusModes.contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE)) {
             // set the focus mode
-            params.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
+            params.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
             // set Camera parameters
             mCamera.setParameters(params);
         }
     }
 
+    // Lower the exposure setting to the lowest possible one
     private void lowerExposure() {
         Camera.Parameters params = mCamera.getParameters();
         int exposureCompensation = params.getExposureCompensation();
@@ -159,6 +171,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         exposureLowered = true;
     }
 
+    // Set exposure setting back to the initial one (auto)
     private void resetExposure() {
         Camera.Parameters params = mCamera.getParameters();
         params.setExposureCompensation(0);
@@ -166,10 +179,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         exposureLowered = false;
     }
 
-
+    // File to hold the jpeg picture and its timestamp
     File mFile = null;
     String timeStamp;
 
+    // Method that creates a file to store the image in the appropriate location
     private void createImageFile() {
         // Find the default directory for storing images on device
         // Make new directory inside to store images
@@ -190,6 +204,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         mFile = new File(imageStorageDir.getPath(), timeStamp + "_" + String.valueOf(azimuth) + "_IMG" + ".jpg");
     }
 
+    // Callback method that is called when the capture button is pressed
     private Camera.PictureCallback jpegCallBack = new Camera.PictureCallback() {
 
         @Override

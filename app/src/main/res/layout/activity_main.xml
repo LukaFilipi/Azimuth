@@ -22,7 +22,6 @@
         android:layout_marginRight="8dp"
         android:background="@drawable/button_rounded" />
 
-
     <Button
         android:id="@+id/reset_button"
         android:layout_width="wrap_content"
@@ -64,7 +63,7 @@
             android:layout_height="match_parent"
             android:padding="8dp"
             android:text="@string/default_angle"
-            android:textColor="@android:color/black"
+            android:textColor="@android:color/holo_orange_light"
             android:textSize="48sp" />
 
         <TextView
@@ -76,7 +75,7 @@
             android:paddingRight="8dp"
             android:paddingTop="16dp"
             android:text="@string/default_angle"
-            android:textColor="@android:color/black"
+            android:textColor="@android:color/holo_orange_light"
             android:textSize="32sp" />
 
         <TextView
@@ -88,10 +87,9 @@
             android:paddingRight="8dp"
             android:paddingTop="16dp"
             android:text="@string/default_angle"
-            android:textColor="@android:color/black"
+            android:textColor="@android:color/holo_orange_light"
             android:textSize="32sp" />
     </LinearLayout>
-
 
     <com.example.android.azimuth.ViewFinder
         android:id="@+id/viewfinder"
