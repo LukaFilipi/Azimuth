@@ -111,6 +111,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             mPreview = new CameraPreview(this, mCamera);
             FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
             preview.addView(mPreview);
+            setAutoFocus();
         }
 
         // register the sensor listener to listen to the accelerometer
