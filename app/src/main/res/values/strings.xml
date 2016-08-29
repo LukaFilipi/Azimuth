@@ -4,4 +4,12 @@
     <string name="reset_button">Reset</string>
     <string name="viewfinder_button">View</string>
     <string name="flat">Flat</string>
+    <string name="focus_prompt">Focus</string>
+
+    <string-array name="focus_modes">
+        <item>Auto</item>
+        <item>Macro</item>
+        <item>Infinity</item>
+    </string-array>
 </resources>
+

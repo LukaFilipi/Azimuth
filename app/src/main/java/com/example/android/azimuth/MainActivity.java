@@ -3,14 +3,18 @@ package com.example.android.azimuth;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
 import android.hardware.SensorManager;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.hardware.Camera;
 import android.hardware.Camera.AutoFocusCallback;
@@ -22,11 +26,12 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements SensorEventListener {
+public class MainActivity extends AppCompatActivity implements SensorEventListener, OnItemSelectedListener {
     private final String TAG = "MainActivity";
 
     private Camera mCamera;
@@ -46,9 +51,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
         preview.addView(mPreview);
 
+        // Default focus setting is continuous auto
         setAutoFocus();
 
+        // Create the sensor manager
         sManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+
+        // Drop-down menu for focus mode selection
+        Spinner focusSpinner = (Spinner) findViewById(R.id.focus_spinner);
+        focusSpinner.setOnItemSelectedListener(this);
 
         // Add a listener to the Capture button
         Button captureButton = (Button) findViewById(R.id.capture_button);
@@ -147,13 +158,60 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         return c; // returns null if camera is unavailable
     }
 
-    // Set the focus mode to continuous picture
+    // Set the focus according to option selected in drop-down menu
+    @Override
+    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+        // On selecting a spinner item
+        String item = parent.getItemAtPosition(position).toString();
+
+        if (item.equals("Macro")) {
+            setMacroFocus();
+        } else if (item.equals("Infinity")) {
+            setInfinityFocus();
+        } else if (item.equals("Auto")) {
+            setAutoFocus();
+        }
+
+        // Showing selected spinner item
+        Toast.makeText(parent.getContext(), "Focus Mode: " + item, Toast.LENGTH_SHORT).show();
+    }
+
+    public void onNothingSelected(AdapterView<?> arg0) {
+        
+    }
+
+
+    // Set the focus mode to continuous picture auto
     private void setAutoFocus() {
         Camera.Parameters params = mCamera.getParameters();
         List<String> focusModes = params.getSupportedFocusModes();
         if (focusModes.contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE)) {
             // set the focus mode
             params.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
+            // set Camera parameters
+            mCamera.setParameters(params);
+        }
+    }
+
+    // Set the focus mode to macro
+    private void setMacroFocus() {
+        Camera.Parameters params = mCamera.getParameters();
+        List<String> focusModes = params.getSupportedFocusModes();
+        if (focusModes.contains(Camera.Parameters.FOCUS_MODE_MACRO)) {
+            // set the focus mode
+            params.setFocusMode(Camera.Parameters.FOCUS_MODE_MACRO);
+            // set Camera parameters
+            mCamera.setParameters(params);
+        }
+    }
+
+    // Set the focus mode to infinity
+    private void setInfinityFocus() {
+        Camera.Parameters params = mCamera.getParameters();
+        List<String> focusModes = params.getSupportedFocusModes();
+        if (focusModes.contains(Camera.Parameters.FOCUS_MODE_INFINITY)) {
+            // set the focus mode
+            params.setFocusMode(Camera.Parameters.FOCUS_MODE_INFINITY);
             // set Camera parameters
             mCamera.setParameters(params);
         }

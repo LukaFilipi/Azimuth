@@ -49,6 +49,18 @@
         android:text="@string/viewfinder_button"
         android:textAllCaps="true" />
 
+    <Spinner
+        android:id="@+id/focus_spinner"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:background="@android:drawable/btn_dropdown"
+        android:entries="@array/focus_modes"
+        android:prompt="@string/focus_prompt"
+        android:spinnerMode="dropdown" />
+
     <LinearLayout
         android:id="@+id/angles_layout"
         android:layout_width="wrap_content"
